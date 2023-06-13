@@ -60,26 +60,27 @@ def load_one_xls_table(begin_row:int,filepath:str):
 #     return web.json_response(read_a_new_url())
 
 def get_table(tablename:str):
-    if tablename == "恒大股份回购":
-        return load_one_xls_table(1,"./恒大/恒大股份回购.xls")
-    if tablename=="恒大财务比率":
-        return load_one_xls_table(0,"./恒大/恒大财务比率.xls")
-    if tablename=="恒大借款":
-        return load_one_xls_table(0,"./恒大/恒大借款.xls")
-    if tablename=="利润表":
-        return load_one_xls_table(0,"./恒大/利润表.xls")
-    if tablename=="资产负债表":
-        return load_one_xls_table(0,"./恒大/资产负债表.xls")
-    if tablename=="宏观景气指数":
-        return load_one_xls_table(0,"./恒大/景气指数/宏观经济景气指数（月度）.xls")
-    if tablename=="消费者景气指数":
-        return load_one_xls_table(0,"./恒大/景气指数/消费者景气指数（月度）.xls")
-    if tablename=="全国居民消费价格指数":
-        return load_one_xls_table(0,"./恒大/景气指数/全国居民消费价格指数（月度）.xls")
-    if tablename=="企业景气及企业家信心指数":
-        return load_one_xls_table(0,"./恒大/景气指数/企业景气及企业家信心指数（季度）.xls")
-    if tablename=="分地区居民消费价格指数":
-        return load_one_xls_table(0,"./恒大/景气指数/分地区居民消费价格指数（月度）.xls")
+    load_xls_table_map={
+        "恒大股份回购":[1,"./恒大/恒大股份回购.xls"],
+        "恒大财务比率":[0,"./恒大/恒大财务比率.xls"],
+        "恒大借款":[0,"./恒大/恒大借款.xls"],
+        "利润表":[0,"./恒大/利润表.xls"],
+
+        # 景气指数相关
+        "资产负债表":[0,"./恒大/资产负债表.xls"],
+        "宏观景气指数":[0,"./恒大/景气指数/宏观经济景气指数（月度）.xls"],
+        "消费者景气指数":[0,"./恒大/景气指数/消费者景气指数（月度）.xls"],
+        "全国居民消费价格指数":[0,"./恒大/景气指数/全国居民消费价格指数（月度）.xls"],
+        "企业景气及企业家信心指数":[0,"./恒大/景气指数/企业景气及企业家信心指数（季度）.xls"],
+        "分地区居民消费价格指数":[0,"./恒大/景气指数/分地区居民消费价格指数（月度）.xls"],
+
+        # 就业与工资
+        "分地区按行业分城镇单位就业人员情况":[0,"./恒大/就业与工资/分地区按行业分城镇单位就业人员情况表（年度）.xls"]
+    }
+
+    if tablename in load_xls_table_map:
+        args=load_xls_table_map[tablename]
+        return load_one_xls_table(args[0],args[1])
         
 print(get_table("恒大股份回购"))
 

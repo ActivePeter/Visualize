@@ -2,14 +2,14 @@
   <div id="all">
     <!-- <NavMenu /> -->
 
-    <div id="app" :style="{ transform: 'scale(' + screenWidth / 1300.0 + ')', transformOrigin: '0 0' }">
+    <div id="app" :style="{ transform: 'scale(' + screenWidth / 2300.0 + ')', transformOrigin: '0 0' }">
       <div class="maintitle">数据可视化平台</div>
       <el-row style="width: 100%;" :gutter="20">
         <el-col :span="6">
           <Container v-for="(item, i) in     cur_pagedata.dataparts    " class="container"
             :style="'height:' + item.height" v-if="item.pos == 'left'">
             <div class="part_title">{{ item.tablename }}</div>
-            <LineTable v-if="item.type == 'line'" :option="item.chart_option">
+            <LineTable :option="item.chart_option">
             </LineTable>
           </Container>
 
@@ -47,7 +47,7 @@
           <Container v-for="(   item, i   ) in        cur_pagedata.dataparts       " class="container"
             :style="'height:' + item.height" v-if="item.pos == 'right'">
             <div class="part_title">{{ item.tablename }}</div>
-            <LineTable v-if="item.type == 'line'" :option="item.chart_option">
+            <LineTable :option="item.chart_option">
             </LineTable>
           </Container>
         </el-col>
@@ -94,22 +94,25 @@ export default {
       pages: [{
         name: "景气指数",
         dataparts: [
-          new DataDescription("宏观景气指数", "left", "220px"),
-          new DataDescription("消费者景气指数", "left", "330px"),
-          new DataDescription("全国居民消费价格指数", "right", "330px"),
-          new DataDescription("企业景气及企业家信心指数", "right", "220px"),
-          new DataDescription("分地区居民消费价格指数", "mid", "420px")
+
+          new DataDescription("消费者景气指数", "left", "630px"),
+          new DataDescription("全国居民消费价格指数", "left", "430px"),
+          new DataDescription("企业景气及企业家信心指数", "right", "430px"),
+          new DataDescription("宏观景气指数", "right", "630px"),
+          new DataDescription("分地区居民消费价格指数", "mid", "920px")
         ]
       }, {
         name: "就业与工资",
         dataparts: [
-          new DataDescription("消费者景气指数", "left", "330px"),
-          new DataDescription("宏观景气指数", "left", "220px"),
 
-          new DataDescription("企业景气及企业家信心指数", "right", "220px"),
-          new DataDescription("全国居民消费价格指数", "right", "330px"),
+          new DataDescription("分地区按行业分城镇单位就业人员情况", "left", "630px"),
+          // new DataDescription("宏观景气指数", "left", "220px"),
+          // new DataDescription("宏观景气指数", "left", "220px"),
 
-          new DataDescription("分地区居民消费价格指数", "mid", "420px"),
+          // new DataDescription("企业景气及企业家信心指数", "right", "220px"),
+          // new DataDescription("全国居民消费价格指数", "right", "330px"),
+
+          // new DataDescription("分地区居民消费价格指数", "mid", "420px"),
         ]
       }, {
         name: "资源环境",
@@ -182,8 +185,8 @@ export default {
 #app {
   background-position: center;
   background: url("assets/img/bg2.jpg");
-  width: 1300px;
-  height: 700px;
+  width: 2300px;
+  height: 1200px;
   background-color: rgb(0, 0, 114);
   background-size: contain;
   color: rgb(114, 201, 255);

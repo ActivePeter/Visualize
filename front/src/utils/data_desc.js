@@ -1,6 +1,6 @@
 import { api_get_table } from "@/utils/request"
 import { MAP_INFO } from "@/utils/mapinfo"
-const map = {
+const config_map = {
     "宏观景气指数": {
         type: "line", x: "stat_month", attr_map: {
             "stat_month": "月份",
@@ -41,6 +41,16 @@ const map = {
         }, whitelist: {
             "area_name": (name) => name != "中国",
             "item_name": (name) => name.indexOf("交通和通信") != -1
+        }
+    },
+
+    "分地区按行业分城镇单位就业人员情况": {
+        type: "bar", x: "industry_name", group_by: "area_name", y: "employ", attr_map: {
+            "industry_name": "行业",
+            "employ": "就业人数",
+            "area_name": "地区"
+        }, whitelist: {
+            "stat_year": (year) => year == "2015"
         }
     }
 }
@@ -96,15 +106,15 @@ export class DataDescription {
     pos = ""
     height
     limit = 10000
-
+    interval_for_x_anime = -1
     constructor(tablename, pos, height = "200px") {
         this.tablename = tablename
         this.pos = pos
         this.height = height
         console.log("DataDescription", this)
     }
-    load_data_line(getmap) {
-        let whitelist_helper = new WhiteListHelper(getmap)
+    load_data_line(config) {
+        let whitelist_helper = new WhiteListHelper(config)
         let linechartdata = new LineChartData()
         linechartdata.set_title(this.tablename)
 
@@ -115,10 +125,10 @@ export class DataDescription {
         let attrline = this.tabledata[0]
 
         attrline.forEach((element, i) => {
-            if (element in getmap.attr_map) {
-                if (element != getmap.x) {
+            if (element in config.attr_map) {
+                if (element != config.x) {
                     y_maps.push([element, i])
-                    linechartdata.add_y(getmap.attr_map[element])
+                    linechartdata.add_y(config.attr_map[element])
                 } else {
                     x_attr_idx = i
                 }
@@ -172,15 +182,64 @@ export class DataDescription {
 
         this.chart_option = mapchartdata.option
     }
+
+    load_data_bar(config) {
+        console.log("load_data_bar")
+        let whitelist_helper = new WhiteListHelper(config)
+        let attrline = this.tabledata[0]
+
+        let x_i = -1
+        let group_by_i = -1
+        let y_i = -1
+
+        attrline.forEach((attr, i) => {
+            if (attr == config.x) {
+                x_i = i
+            }
+            if (attr == config.group_by) {
+                group_by_i = i
+            }
+            if (attr == config.y) {
+                y_i = i
+            }
+            whitelist_helper.collect_one_attr(attr, i)
+        })
+
+        let collector = new BarChartGroupCollector()
+        this.tabledata.slice(1).forEach((row) => {
+            if (whitelist_helper.check_row(row)) {
+                collector.check_group(row[group_by_i], row[x_i], row[y_i])
+            }
+        })
+
+        this.chart_option = collector.into_chart_option()
+
+        // anime
+        if (this.interval_for_x_anime != -1) {
+            clearInterval(this.interval_for_x_anime)
+        }
+        this.interval_for_x_anime = setInterval(() => {
+            if (this.chart_option.dataZoom[0].endValue === this.chart_option.xAxis[0].data.length) {
+                this.chart_option.dataZoom[0].startValue = 0;
+                this.chart_option.dataZoom[0].endValue = 3;
+            } else {
+                this.chart_option.dataZoom[0].startValue += 1
+                this.chart_option.dataZoom[0].endValue += 1;
+            }
+        }, 1000)
+    }
+
     async load_data() {
         this.tabledata = (await api_get_table(this.tablename)).data
-        console.log(map, this.tablename)
-        let getmap = map[this.tablename]
-        this.type = getmap.type
-        if (getmap.type == "line") {
-            this.load_data_line(getmap)
-        } else if (getmap.type == "map") {
-            this.load_data_map(getmap)
+        console.log(config_map, this.tablename)
+        let config = config_map[this.tablename]
+        this.type = config.type
+        if (config.type == "line") {
+            this.load_data_line(config)
+        } else if (config.type == "map") {
+            this.load_data_map(config)
+        } else if (config.type == "bar") {
+            this.load_data_bar(config)
         }
 
 
@@ -190,7 +249,145 @@ export class DataDescription {
         // }
     }
 }
+class BarChartGroupCollector {
+    group_name_2_i = {}
+    groups = []
+    all_x_s = {}
+    check_group(group_name, x_name, y_value) {
+        if (!(group_name in this.group_name_2_i)) {
+            this.groups.push({
+                group_name,
+                columns: {} // x_name 2 y_value
+            })
+            this.group_name_2_i[group_name] = this.groups.length - 1
+        }
+        let group = this.groups[this.group_name_2_i[group_name]]
+        group.columns[x_name] = y_value
+        this.all_x_s[x_name] = 0
+    }
+    into_chart_option() {
+        let option = bar_chart_default_option()
 
+        // generate ordered x
+        let ordered_x_s = []
+        {
+            let i = 0
+            for (const key in this.all_x_s) {
+                ordered_x_s.push(key)
+            }
+        }
+        // groups
+        console.log("collected groups", this.groups)
+        option.xAxis[0].data = this.groups.map((v) => {
+            return v.group_name
+        })
+        console.log("group names", option.xAxis[0].data)
+        // outter for - x
+        ordered_x_s.forEach((x_name, i) => {
+            // 横轴类型
+            option.legend.data.push(x_name)
+            // 横轴类型描述
+            option.series.push(
+                {
+                    name: x_name,
+                    type: 'bar',
+                    barGap: 0,
+                    label: "label_" + x_name,
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    // 当前x对应不同group的值
+                    data: this.groups.map(group => {
+                        if (x_name in group.columns) {
+                            return group.columns[x_name]
+                        } else {
+                            return 0
+                        }
+                    })
+                },
+            )
+        })
+
+        return option
+    }
+}
+function bar_chart_default_option() {
+    let option = {
+
+        backgroundColor: 'transparent',
+        tooltip: {
+            show: false
+        },
+        legend: {
+            data: []//['Forest', 'Steppe', 'Desert', 'Wetland']
+        },
+        toolbox: {
+            show: false,
+        },
+        dataZoom: [
+            {
+                show: false, // 是否显示滑动条
+                xAxisIndex: 0, // 这里是从X轴的0刻度开始
+                startValue: 0, // 数据窗口范围的起始数值
+                endValue: 3 // 数据窗口范围的结束数值(一次性展示几个)
+            }
+        ],
+        xAxis: [
+            {
+                type: 'category',
+                axisTick: { show: true },
+                axisLabel: { interval: 0, rotate: 90 },
+                data: []//['2012', '2013', '2014', '2015', '2016']
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value'
+            }
+        ],
+        series: [
+            // {
+            //     name: 'Forest',
+            //     type: 'bar',
+            //     barGap: 0,
+            //     label: labelOption,
+            //     emphasis: {
+            //         focus: 'series'
+            //     },
+            //     data: [320, 332, 301, 334, 390]
+            // },
+            // {
+            //     name: 'Steppe',
+            //     type: 'bar',
+            //     label: labelOption,
+            //     emphasis: {
+            //         focus: 'series'
+            //     },
+            //     data: [220, 182, 191, 234, 290]
+            // },
+            // {
+            //     name: 'Desert',
+            //     type: 'bar',
+            //     label: labelOption,
+            //     emphasis: {
+            //         focus: 'series'
+            //     },
+            //     data: [150, 232, 201, 154, 190]
+            // },
+            // {
+            //     name: 'Wetland',
+            //     type: 'bar',
+            //     label: labelOption,
+            //     emphasis: {
+            //         focus: 'series'
+            //     },
+            //     data: [98, 77, 101, 99, 40]
+            // }
+        ]
+    }
+
+    return option
+}
 
 class MapChartData {
     option = {
