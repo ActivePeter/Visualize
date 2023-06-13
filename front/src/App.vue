@@ -106,6 +106,7 @@ export default {
         dataparts: [
 
           new DataDescription("分地区按行业分城镇单位就业人员情况", "left", "630px"),
+          new DataDescription("分地区按注册类型分城镇单位就业人员工资情况", "mid", "920px"),
           // new DataDescription("宏观景气指数", "left", "220px"),
           // new DataDescription("宏观景气指数", "left", "220px"),
 

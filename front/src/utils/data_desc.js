@@ -41,7 +41,7 @@ const config_map = {
         }, whitelist: {
             "area_name": (name) => name != "中国",
             "item_name": (name) => name.indexOf("交通和通信") != -1
-        }
+        }, map_point_scale: 0.1
     },
 
     "分地区按行业分城镇单位就业人员情况": {
@@ -50,9 +50,35 @@ const config_map = {
             "employ": "就业人数",
             "area_name": "地区"
         }, whitelist: {
-            "stat_year": (year) => year == "2015"
+            "stat_year": (year) => year == "2015",
+            "industry_name": (name) => name != "城镇单位总计"
         }
-    }
+    },
+    // "分地区按注册类型分城镇单位就业人员工资情况": {
+    //     type: "bar", x: "stat_year", group_by: "area_name", y: "wage_avg", attr_map: {
+    //         "wage_avg": "该行业平均工资",
+    //         "area_name": "地区",
+    //         "stat_year": "年份"
+    //     }, whitelist: {}
+    // },
+
+    // "分地区按注册类型分城镇单位就业人员工资情况": {
+    //     type: "line", x: "stat_year", attr_map: {
+    //         "stat_year": "年份",
+    //         "wage_avg": "该行业平均工资",
+    //     }, whitelist: {
+    //         "area_name": (name) => name == "福建省"
+    //     }
+    // },
+
+    "分地区按注册类型分城镇单位就业人员工资情况": {
+        type: "map", lockey: "area_name", attr_map: {
+            // "stat_quarter": "季度",
+            "wage_avg": "该行业平均工资",
+        }, whitelist: {
+            "stat_year": (year) => year == "2006"
+        }, map_point_scale: 0.001
+    },
 }
 
 function quickSort(arr, cmp) {
@@ -175,7 +201,7 @@ export class DataDescription {
                     arr_locname_value.push([row[loc_idx], row[attr_idx]])
                 }
             })
-            mapchartdata.add_one_dataset(attr_name, arr_locname_value, 0.1)
+            mapchartdata.add_one_dataset(attr_name, arr_locname_value, config.map_point_scale)
         })
 
 
@@ -477,7 +503,7 @@ class MapChartData {
             locname = locname.slice(0, locname.length - 1)
         }
 
-        let spec = ["宁夏", "新疆"]
+        let spec = ["宁夏", "新疆", "广西", "西藏", "内蒙古"]
         spec.forEach((spec) => {
             if (locname.indexOf(spec) != -1) {
                 locname = spec
@@ -493,7 +519,7 @@ class MapChartData {
             type: 'scatter',
             coordinateSystem: 'geo',
             data: arr_locname_value.map(locname_value => {
-                // console.log("get_loc_coord", locname_value[0], this.get_loc_coord(locname_value[0]))
+                console.log("get_loc_coord", locname_value[0], this.get_loc_coord(locname_value[0]))
                 return {
                     name: locname_value[0],
                     value: this.get_loc_coord(locname_value[0]).concat(locname_value[1])
