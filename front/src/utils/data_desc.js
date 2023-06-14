@@ -82,8 +82,8 @@ const config_map = {
     //         "stat_year": (year) => year == "2006"
     //     }, map_point_scale: 0.001
     // },
-    
-    "保险公司保费金额表(年度)": {
+
+    "保险公司保费金额表": {
         type: "line", group_by: "stat_year",
         attr_map: {
             "stat_year": "年份",
@@ -91,6 +91,18 @@ const config_map = {
             "property_income": "财产保险公司保费",
             "enterprise": "企业财产保险保费",
             "family": "家庭财产保险保费"
+        }, whitelist: {
+        }
+    },
+
+    "保险公司赔款及给付表": {
+        type: "line", group_by: "stat_year",
+        attr_map: {
+            "stat_year": "年份",
+            "total_expense": "保险公司赔款及给付",
+            "vehicle": "机动车辆保险赔款及给付",
+            "enterprise": "企业财产保险赔款及给付费",
+            "family": "家庭财产保险赔款及给付费"
         }, whitelist: {
         }
     },
