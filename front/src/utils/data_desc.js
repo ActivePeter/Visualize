@@ -106,6 +106,16 @@ const config_map = {
         }, whitelist: {
         }
     },
+
+        "保险公司原保费收入和赔付支出情况": {
+        type: "line", group_by: "stat_year",
+        attr_map: {
+            "stat_year": "年份",
+            "original_revenue": "原保险保费收入",
+            "original_expense": "原保险保费支出",
+        }, whitelist: {
+        }
+    },
 }
 
 function quickSort(arr, cmp) {
