@@ -82,6 +82,18 @@ const config_map = {
     //         "stat_year": (year) => year == "2006"
     //     }, map_point_scale: 0.001
     // },
+    
+    "保险公司保费金额表(年度)": {
+        type: "line", group_by: "stat_year",
+        attr_map: {
+            "stat_year": "年份",
+            "total_income": "保险公司保费",
+            "property_income": "财产保险公司保费",
+            "enterprise": "企业财产保险保费",
+            "family": "家庭财产保险保费"
+        }, whitelist: {
+        }
+    },
 }
 
 function quickSort(arr, cmp) {

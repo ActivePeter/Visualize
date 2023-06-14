@@ -126,7 +126,9 @@ export default {
         dataparts: []
       }, {
         name: "保险",
-        dataparts: []
+        dataparts: [
+        new DataDescription("保险公司保费金额表(年度)", "left", "630px"),
+        ]
       }, {
         name: "房地产",
         dataparts: []
