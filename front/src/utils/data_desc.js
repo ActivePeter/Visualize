@@ -2,7 +2,7 @@ import { api_get_table } from "@/utils/request"
 import { MAP_INFO } from "@/utils/mapinfo"
 const config_map = {
     "宏观景气指数": {
-        type: "line", x: "stat_month", attr_map: {
+        type: "line", group_by: "stat_month", attr_map: {
             "stat_month": "月份",
             "early_warning_idx": "预警指数信号",
             "leading_idx": "超前信号",
@@ -11,7 +11,7 @@ const config_map = {
         }, whitelist: {}
     },
     "消费者景气指数": {
-        type: "line", x: "stat_month", attr_map: {
+        type: "line", group_by: "stat_month", attr_map: {
             "stat_month": "月份",
             "expectation_idx": "期望指数",
             "satisfaction_idx": "满意指数",
@@ -19,7 +19,7 @@ const config_map = {
         }, whitelist: {}
     },
     "全国居民消费价格指数": {
-        type: "line", x: "stat_month", attr_map: {
+        type: "line", group_by: "stat_month", attr_map: {
             "stat_month": "月份",
             "cpi_month": "当月cpi",
             // "yoy": "满意指数",
@@ -28,7 +28,7 @@ const config_map = {
         }, whitelist: { "area_name": (name) => name == "全国" }
     },
     "企业景气及企业家信心指数": {
-        type: "line", x: "stat_quarter", attr_map: {
+        type: "line", group_by: "stat_quarter", attr_map: {
             "stat_quarter": "季度",
             "confidence_idx": "企业家信心指数",
             "boom_idx": "企业景气指数"
@@ -45,7 +45,7 @@ const config_map = {
     },
 
     "分地区按行业分城镇单位就业人员情况": {
-        type: "bar", x: "industry_name", group_by: "area_name", y: "employ", attr_map: {
+        type: "bar", attr_in_group: "industry_name", group_by: "area_name", y: "employ", attr_map: {
             "industry_name": "行业",
             "employ": "就业人数",
             "area_name": "地区"
@@ -62,23 +62,26 @@ const config_map = {
     //     }, whitelist: {}
     // },
 
+    "分地区按注册类型分城镇单位就业人员工资情况": {
+        type: "line", group_by: "stat_year",
+        attr_in_group: "area_name",
+        attr_map: {
+            "stat_year": "年份",
+            "wage_avg": "该行业平均工资",
+            "area_name": "地区"
+        }, whitelist: {
+            // "area_name": (name) => name == "福建省"
+        }
+    },
+
     // "分地区按注册类型分城镇单位就业人员工资情况": {
-    //     type: "line", x: "stat_year", attr_map: {
-    //         "stat_year": "年份",
+    //     type: "map", lockey: "area_name", attr_map: {
+    //         // "stat_quarter": "季度",
     //         "wage_avg": "该行业平均工资",
     //     }, whitelist: {
-    //         "area_name": (name) => name == "福建省"
-    //     }
+    //         "stat_year": (year) => year == "2006"
+    //     }, map_point_scale: 0.001
     // },
-
-    "分地区按注册类型分城镇单位就业人员工资情况": {
-        type: "map", lockey: "area_name", attr_map: {
-            // "stat_quarter": "季度",
-            "wage_avg": "该行业平均工资",
-        }, whitelist: {
-            "stat_year": (year) => year == "2006"
-        }, map_point_scale: 0.001
-    },
 }
 
 function quickSort(arr, cmp) {
@@ -149,14 +152,19 @@ export class DataDescription {
         let y_maps = []
         let x_attr_idx = -1
         let attrline = this.tabledata[0]
+        let attr_in_group_idx = -1
 
         attrline.forEach((element, i) => {
             if (element in config.attr_map) {
-                if (element != config.x) {
-                    y_maps.push([element, i])
-                    linechartdata.add_y(config.attr_map[element])
-                } else {
+                if (element == config.group_by) {
                     x_attr_idx = i
+                } else if (element == config.attr_in_group) {
+                    attr_in_group_idx = i
+                } else {
+                    y_maps.push([element, i])
+                    if (!("attr_in_group" in config)) {
+                        linechartdata.add_y(config.attr_map[element])
+                    }
                 }
             }
             whitelist_helper.collect_one_attr(element, i)
@@ -165,12 +173,51 @@ export class DataDescription {
         this.tabledata = quickSort(this.tabledata.slice(1, this.limit), (a, b) => {
             return a[x_attr_idx] > b[x_attr_idx]
         })
-        this.tabledata.forEach(row => {
-            if (whitelist_helper.check_row(row)) {
-                linechartdata.add_x(row[x_attr_idx],
-                    y_maps.map(attr_name_idx => row[attr_name_idx[1]]))
+        if ("attr_in_group" in config) {
+            let group_by_x_rows = {}
+            this.tabledata.forEach(row => {
+                if (whitelist_helper.check_row(row)) {
+                    let x_attr = row[x_attr_idx]
+                    if (x_attr in group_by_x_rows) {
+                        group_by_x_rows[x_attr].push(row)
+                    } else {
+                        group_by_x_rows[x_attr] = [row]
+                    }
+                }
+            })
+
+            let collect_attr_in_group = {}
+            for (const key in group_by_x_rows) {
+                let grouped_rows = group_by_x_rows[key]
+                grouped_rows.forEach(row => {
+                    let attr_in_group = row[attr_in_group_idx]
+                    // linechartdata.add_y(attr_in_group)
+                    collect_attr_in_group[attr_in_group] = 1
+                })
             }
-        })
+            let collect_attr_in_group_orderd = []
+            for (const key in collect_attr_in_group) {
+                collect_attr_in_group_orderd.push(key)
+                linechartdata.add_y(key)
+            }
+            for (const key in group_by_x_rows) {
+                let grouped_rows = group_by_x_rows[key]
+                let attr_in_group_2_value = {}
+                grouped_rows.forEach(row => {
+                    attr_in_group_2_value[row[attr_in_group_idx]] = row[y_maps[0][1]]
+                })
+                linechartdata.add_x(key, collect_attr_in_group_orderd.map(attr_in_group => {
+                    return attr_in_group in attr_in_group_2_value ? attr_in_group_2_value[attr_in_group] : 0
+                }))
+            }
+        } else {
+            this.tabledata.forEach(row => {
+                if (whitelist_helper.check_row(row)) {
+                    linechartdata.add_x(row[x_attr_idx],
+                        y_maps.map(attr_name_idx => row[attr_name_idx[1]]))
+                }
+            })
+        }
 
         this.chart_option = linechartdata.option
     }
@@ -214,13 +261,13 @@ export class DataDescription {
         let whitelist_helper = new WhiteListHelper(config)
         let attrline = this.tabledata[0]
 
-        let x_i = -1
+        let attr_in_group_i = -1
         let group_by_i = -1
         let y_i = -1
 
         attrline.forEach((attr, i) => {
-            if (attr == config.x) {
-                x_i = i
+            if (attr == config.attr_in_group) {
+                attr_in_group_i = i
             }
             if (attr == config.group_by) {
                 group_by_i = i
@@ -234,7 +281,7 @@ export class DataDescription {
         let collector = new BarChartGroupCollector()
         this.tabledata.slice(1).forEach((row) => {
             if (whitelist_helper.check_row(row)) {
-                collector.check_group(row[group_by_i], row[x_i], row[y_i])
+                collector.check_group(row[group_by_i], row[attr_in_group_i], row[y_i])
             }
         })
 
@@ -279,7 +326,7 @@ class BarChartGroupCollector {
     group_name_2_i = {}
     groups = []
     all_x_s = {}
-    check_group(group_name, x_name, y_value) {
+    check_group(group_name, attr_in_group_name, y_value) {
         if (!(group_name in this.group_name_2_i)) {
             this.groups.push({
                 group_name,
@@ -288,8 +335,8 @@ class BarChartGroupCollector {
             this.group_name_2_i[group_name] = this.groups.length - 1
         }
         let group = this.groups[this.group_name_2_i[group_name]]
-        group.columns[x_name] = y_value
-        this.all_x_s[x_name] = 0
+        group.columns[attr_in_group_name] = y_value
+        this.all_x_s[attr_in_group_name] = 0
     }
     into_chart_option() {
         let option = bar_chart_default_option()
@@ -647,6 +694,7 @@ class LineChartData {
         // this.option.title.text = title
     }
     add_y(name) {
+        console.log("add y", name)
         this.option.legend.data.push(name)
         this.option.series.push(
             {
@@ -665,6 +713,7 @@ class LineChartData {
         )
     }
     add_x(xname, values) {
+        console.log("add x", xname, values)
         this.option.xAxis[0].data.push(xname)
         for (let i = 0; i < values.length; i++) {
             this.option.series[i].data.push(values[i])
