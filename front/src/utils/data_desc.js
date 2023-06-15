@@ -116,6 +116,27 @@ const config_map = {
         }, whitelist: {
         }
     },
+
+    "保险公司资产情况": {
+        type: "line", group_by: "stat_year",
+        attr_map: {
+            "stat_year": "年份",
+            "total": "保险业资产总额",
+        }, whitelist: {
+        }
+    },
+
+    "全国各地区保险业务统计表": {
+        type: "line", group_by: "stat_year",
+        attr_in_group: "area_name",
+        attr_map: {
+            "stat_year": "年份",
+            "income": "原保险保费收入",
+            "area_name": "地区"
+        }, whitelist: {
+            // "area_name": (name) => name == "福建省"
+        }
+    },
 }
 
 function quickSort(arr, cmp) {

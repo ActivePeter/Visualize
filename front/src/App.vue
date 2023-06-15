@@ -130,6 +130,8 @@ export default {
         new DataDescription("保险公司保费金额表", "left", "630px"),
         new DataDescription("保险公司赔款及给付表", "left", "430px"),
         new DataDescription("保险公司原保费收入和赔付支出情况", "right", "430px"),
+        new DataDescription("保险公司资产情况", "right", "630px"),
+        new DataDescription("全国各地区保险业务统计表", "mid", "920px"),
         ]
       }, {
         name: "房地产",
