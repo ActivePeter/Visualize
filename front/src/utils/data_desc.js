@@ -96,6 +96,61 @@ const config_map = {
     //         "stat_year": (year) => year == "2006"
     //     }, map_point_scale: 0.001
     // },
+
+    "保险公司保费金额表": {
+        type: "line", group_by: "stat_year",
+        attr_map: {
+            "stat_year": "年份",
+            "total_income": "保险公司保费",
+            "property_income": "财产保险公司保费",
+            "enterprise": "企业财产保险保费",
+            "family": "家庭财产保险保费"
+        }, whitelist: {
+        }
+    },
+
+    "保险公司赔款及给付表": {
+        type: "line", group_by: "stat_year",
+        attr_map: {
+            "stat_year": "年份",
+            "total_expense": "保险公司赔款及给付",
+            "vehicle": "机动车辆保险赔款及给付",
+            "enterprise": "企业财产保险赔款及给付费",
+            "family": "家庭财产保险赔款及给付费"
+        }, whitelist: {
+        }
+    },
+
+        "保险公司原保费收入和赔付支出情况": {
+        type: "line", group_by: "stat_year",
+        attr_map: {
+            "stat_year": "年份",
+            "original_revenue": "原保险保费收入",
+            "original_expense": "原保险保费支出",
+        }, whitelist: {
+        }
+    },
+
+    "保险公司资产情况": {
+        type: "line", group_by: "stat_year",
+        attr_map: {
+            "stat_year": "年份",
+            "total": "保险业资产总额",
+        }, whitelist: {
+        }
+    },
+
+    "全国各地区保险业务统计表": {
+        type: "line", group_by: "stat_year",
+        attr_in_group: "area_name",
+        attr_map: {
+            "stat_year": "年份",
+            "income": "原保险保费收入",
+            "area_name": "地区"
+        }, whitelist: {
+            // "area_name": (name) => name == "福建省"
+        }
+    },
 }
 
 function quickSort(arr, cmp) {
