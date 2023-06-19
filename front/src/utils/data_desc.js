@@ -80,14 +80,28 @@ const config_map = {
     //     }, whitelist: {}
     // },
 
+    // "分地区按注册类型分城镇单位就业人员工资情况": {
+    //     type: "line", group_by: "stat_year",
+    //     attr_in_group: "area_name",
+    //     attr_map: {
+    //         "stat_year": "年份",
+    //         "wage_avg": "该行业平均工资",
+    //         "area_name": "地区"
+    //     }, whitelist: {
+    //         // "area_name": (name) => name == "福建省"
+    //     }
+    // },
+
     "分地区按注册类型分城镇单位就业人员工资情况": {
-        type: "line", group_by: "stat_year",
-        attr_in_group: "area_name",
+        type: "pie", group_by: "area_name",
+        // attr_in_group: "area_name",
+        value: "wage_avg",
         attr_map: {
-            "stat_year": "年份",
+            "area_name": "地区",
             "wage_avg": "该行业平均工资",
-            "area_name": "地区"
+            // "area_name": "地区"
         }, whitelist: {
+            "stat_year": (year) => year == "2006"
             // "area_name": (name) => name == "福建省"
         }
     },
@@ -153,6 +167,13 @@ const config_map = {
             "item_sale_sin_rate": "累计增长",
             "item_sale_acc_rate": "当期值"
         }, whitelist: {
+        
+    "保险公司资产情况": {
+        type: "line", group_by: "stat_year",
+        attr_map: {
+            "stat_year": "年份",
+            "total": "保险业资产总额",
+        }, whitelist: {
         }
     },
     "分地区亿元以上商品交易市场基本情况（年度）": {
@@ -162,6 +183,20 @@ const config_map = {
         }, whitelist: {
             
         }, map_point_scale: 0.1
+    },
+}
+    },
+
+    "全国各地区保险业务统计表": {
+        type: "line", group_by: "stat_year",
+        attr_in_group: "area_name",
+        attr_map: {
+            "stat_year": "年份",
+            "income": "原保险保费收入",
+            "area_name": "地区"
+        }, whitelist: {
+            // "area_name": (name) => name == "福建省"
+        }
     },
 }
 
@@ -383,6 +418,33 @@ export class DataDescription {
         }, 1000)
     }
 
+    load_data_pie(config) {
+        let whitelist_helper = new WhiteListHelper(config)
+        let attrline = this.tabledata[0]
+
+        let group_by_i = -1
+        let value_i = -1
+
+        attrline.forEach((attr, i) => {
+            if (attr == config.group_by) {
+                group_by_i = i
+            }
+            if (attr == config.value) {
+                value_i = i
+            }
+            whitelist_helper.collect_one_attr(attr, i)
+        })
+
+
+        let helper = new PieChartHelper()
+        this.tabledata.slice(1).forEach((row) => {
+            if (whitelist_helper.check_row(row)) {
+                helper.add_one(row[value_i], row[group_by_i])
+            }
+        })
+        this.chart_option = helper.option
+    }
+
     async load_data() {
         this.tabledata = (await api_get_table(this.tablename)).data
         console.log(config_map, this.tablename)
@@ -394,6 +456,8 @@ export class DataDescription {
             this.load_data_map(config)
         } else if (config.type == "bar") {
             this.load_data_bar(config)
+        } else if (config.type == "pie") {
+            this.load_data_pie(config)
         }
 
 
@@ -465,6 +529,56 @@ class BarChartGroupCollector {
         return option
     }
 }
+
+class PieChartHelper {
+    default_opt() {
+        return {
+
+            backgroundColor: 'transparent',
+            // title: {
+            //   text: 'Referer of a Website',
+            //   subtext: 'Fake Data',
+            //   left: 'center'
+            // },
+            tooltip: {
+                trigger: 'item'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left'
+            },
+            series: [
+                {
+                    name: 'Access From',
+                    type: 'pie',
+                    radius: '50%',
+                    data: [
+                        //   { value: 1048, name: 'Search Engine' },
+                        //   { value: 735, name: 'Direct' },
+                        //   { value: 580, name: 'Email' },
+                        //   { value: 484, name: 'Union Ads' },
+                        //   { value: 300, name: 'Video Ads' }
+                    ],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+    }
+    constructor() {
+        this.option = this.default_opt()
+    }
+    add_one(value, name) {
+        this.option.series[0].data.push({ value, name })
+        return this
+    }
+}
+
 function bar_chart_default_option() {
     let option = {
 
