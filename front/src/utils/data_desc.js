@@ -54,6 +54,24 @@ const config_map = {
             "industry_name": (name) => name != "城镇单位总计"
         }
     },
+    "分地区消费品零售总额（年度）": {
+        type: "bar", attr_in_group: "stat_year", group_by: "area_name", y: "retail", attr_map: {
+            "stat_year": "统计年份",
+            "retail": "社会消费品零售总额",
+            "area_name": "地区名称"
+        }, whitelist: {
+        }
+    },
+    "亿元以上商品交易市场基本情况（年度）": {
+        type: "bar", attr_in_group: "stat_year", group_by: "market_name", y: "stall_num", attr_map: {
+            "stat_year": "统计年份",
+            "market_name": "市场名称",
+            "stall_num": "摊位数量"
+        }, whitelist: {
+        }
+    },
+   
+     
     // "分地区按注册类型分城镇单位就业人员工资情况": {
     //     type: "bar", x: "stat_year", group_by: "area_name", y: "wage_avg", attr_map: {
     //         "wage_avg": "该行业平均工资",
@@ -115,6 +133,35 @@ const config_map = {
             "original_expense": "原保险保费支出",
         }, whitelist: {
         }
+    },
+    "社会消费品销售总额（月度）": {
+        type: "line", group_by: "stat_month", attr_map: {
+            "stat_month": "月份",
+            "retail_sin": "当期值",
+            "retail_acc": "累计值",
+            "retail_sin_yoy": "同比增长",
+            "retail_acc_yoy": "累计增长"
+        }, whitelist: {}
+    },
+    "限额以上零售分类表（月度）": {
+        type: "line", group_by: "stat_month", 
+        attr_in_group: "item_name",
+        attr_map: {
+            "stat_month": "月份",
+            "item_sale_sin": "当前值",
+            "item_sale_acc": "累计值",
+            "item_sale_sin_rate": "累计增长",
+            "item_sale_acc_rate": "当期值"
+        }, whitelist: {
+        }
+    },
+    "分地区亿元以上商品交易市场基本情况（年度）": {
+        type: "map", lockey: "area_name", attr_map: {
+            // "stat_quarter": "季度",
+            "market_num": "市场数量",
+        }, whitelist: {
+            
+        }, map_point_scale: 0.1
     },
 }
 
@@ -584,7 +631,7 @@ class MapChartData {
             locname = locname.slice(0, locname.length - 1)
         }
 
-        let spec = ["宁夏", "新疆", "广西", "西藏", "内蒙古"]
+        let spec = ["宁夏", "新疆", "广西", "西藏", "内蒙古","香港","澳门"]
         spec.forEach((spec) => {
             if (locname.indexOf(spec) != -1) {
                 locname = spec

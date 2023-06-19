@@ -132,6 +132,15 @@ export default {
         new DataDescription("保险公司原保费收入和赔付支出情况", "right", "430px"),
         ]
       }, {
+        name: "国内贸易",
+        dataparts: [
+        new DataDescription("分地区消费品零售总额（年度）", "left", "630px"),
+        new DataDescription("社会消费品销售总额（月度）", "left", "430px"),
+        new DataDescription("限额以上零售分类表（月度）", "right", "430px"),
+        new DataDescription("亿元以上商品交易市场基本情况（年度）", "right", "630px"),
+        new DataDescription("分地区亿元以上商品交易市场基本情况（年度）", "mid", "920px")
+        ]
+      },{
         name: "房地产",
         dataparts: []
       }, {
