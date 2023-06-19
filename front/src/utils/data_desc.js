@@ -167,7 +167,8 @@ const config_map = {
             "item_sale_sin_rate": "累计增长",
             "item_sale_acc_rate": "当期值"
         }, whitelist: {
-        
+        }
+    }, 
     "保险公司资产情况": {
         type: "line", group_by: "stat_year",
         attr_map: {
@@ -184,8 +185,8 @@ const config_map = {
             
         }, map_point_scale: 0.1
     },
-}
-    },
+
+    
 
     "全国各地区保险业务统计表": {
         type: "line", group_by: "stat_year",
