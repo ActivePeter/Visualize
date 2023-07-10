@@ -146,7 +146,7 @@ export default {
 
             new DataDescription("自然灾害情况", "mid", "920px"),
           ]
-        }, {//todo
+        }, {
           name: "人民生活",
           dataparts: [
             new DataDescription("城乡恩格尔指数", "left", "630px"),
@@ -160,13 +160,13 @@ export default {
         }, {//todo
           name: "财政政策",
           dataparts: [
-            new DataDescription("分地区按行业分城镇单位就业人员情况", "left", "630px"),
-            new DataDescription("分地区城镇登记失业率", "left", "430px"),
+            new DataDescription("各地区财政收入", "left", "630px"),
+            new DataDescription("各地区财政支出", "left", "430px"),
 
-            new DataDescription("分行业城镇单位就业人员工资情况表", "right", "430px"),
-            new DataDescription("就业情况基本表", "right", "630px"),
+            new DataDescription("外债余额", "right", "430px"),
+            new DataDescription("外债风险指标", "right", "630px"),
 
-            new DataDescription("分地区按注册类型分城镇单位就业人员工资情况", "mid", "920px"),
+            new DataDescription("中央与地方财政收支情况", "mid", "920px"),
           ]
         }, {
           name: "保险",
@@ -188,7 +188,13 @@ export default {
           ]
         }, {
           name: "房地产",
-          dataparts: []
+          dataparts: [
+            new DataDescription("房地产投资情况", "left", "630px"),
+            new DataDescription("分地区投资情况", "left", "430px"),
+            new DataDescription("限额以上零售分类表（月度）", "right", "430px"),
+            new DataDescription("开发投资资金来源", "right", "630px"),
+            new DataDescription("分地区开发竣工情况", "mid", "920px")
+          ]
         }, {
           name: "国民经济",
           dataparts: []

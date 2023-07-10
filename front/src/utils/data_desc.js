@@ -32,7 +32,8 @@ const config_map = {
                 // ["乡镇就业", i("employ_rural")],
                 // ["未就业数", i("unemploy_num")]
             ]
-        }
+        },
+        x_count: 12,
     },
     "全国居民消费价格指数": {
         type: "line", group_by: "stat_month", attr_map: {
@@ -305,6 +306,138 @@ const config_map = {
             ]
         },
         x_count: 8
+    },
+
+    //财政政策
+    "各地区财政收入": {
+        type: "line", attr_in_group: "area_name", group_by: "stat_year", attr_map: {
+            "stat_year": "年份",
+            "area_name": "省份",
+            "general_budget": "总体收入",
+        }, whitelist: {}
+    },
+    "各地区财政支出": {
+        type: "line", attr_in_group: "area_name", group_by: "stat_year", attr_map: {
+            "stat_year": "年份",
+            "area_name": "省份",
+            "general_budget": "总体收入",
+        }, whitelist: {}
+    },
+    "中央与地方财政收支情况": {
+        type: "pie", desc_version: 2,
+        hide_tooltip: true,
+        collector: (rows, attr_index_map) => {
+            let collect_each_province = {}
+            rows.forEach(row => {
+                if (row[1] > "2000") {
+                    collect_each_province[row[1]] = row
+                }
+            })
+
+            let collect_each_type = [['收支类型', '中央收入', '地方收入', '中央支出', '地方支出']]
+            for (const province in collect_each_province) {
+                const row = collect_each_province[province]
+                function i(attr_name) {
+                    return row[attr_index_map[attr_name]]
+                }
+                collect_each_type.push([province, i("central_revenue"), i("local_revenue"), i("central_expense"), i("local_expense")])
+            }
+
+            return collect_each_type
+        }
+    },
+    "外债余额": {
+        type: "bar", desc_version: 2, group_by_keys: ["stat_year"],
+        collector: (rows, attr_index_map) => {
+            const row = rows[0]
+            function i(attr_name) {
+                return row[attr_index_map[attr_name]]
+            }
+            return [
+                ["长期债务", i("long_term_debt")],
+                ["短期债务", i("short_term_debt")],
+            ]
+        },
+        x_count: 8
+    },
+    "外债风险指标": {
+        type: "bar", desc_version: 2, group_by_keys: ["stat_year"],
+        collector: (rows, attr_index_map) => {
+            const row = rows[0]
+            function i(attr_name) {
+                return row[attr_index_map[attr_name]]
+            }
+            return [
+                ["外债清偿比率", i("debt_service_ratio")],
+                ["负债比率", i("liability_ratio")],
+                ["债务率", i("foreign_debt_ratio")]
+            ]
+        },
+        x_count: 12
+    },
+
+    //房地产
+    "房地产投资情况": {
+        type: "line", group_by: "stat_month", attr_map: {
+            "stat_month": "月份",
+            "auxiliary_project": "配套工程",
+            "resident": "住户",
+            "villa_flat": "别墅公寓",
+            "office": "办公室",
+            "business": "商业楼",
+            "other_house": "其他类型"
+        }, whitelist: {}
+    },
+    "分地区投资情况": {
+        type: "map", lockey: "area_name", attr_map: {
+            // "stat_quarter": "季度",
+            "invest": "投资情况",
+        },
+        map_point_scale: 0.005,
+        map_point_offset: -100,
+        whitelist: {
+            stat_month: (m) => m == "2016-11"
+        }
+    },
+    "分地区开发竣工情况": {
+        type: "pie", desc_version: 2,
+        hide_tooltip: true,
+        collector: (rows, attr_index_map) => {
+            let collect_each_province = {}
+            rows.forEach(row => {
+                if (row[1] > "2020-10") {
+                    collect_each_province[row[1]] = row
+                }
+            })
+
+            let collect_each_type = [['类型', '建筑面积', '新建面积', '竣工面积']]
+            for (const province in collect_each_province) {
+                const row = collect_each_province[province]
+                function i(attr_name) {
+                    return row[attr_index_map[attr_name]]
+                }
+                collect_each_type.push([province, i("construct_area"), i("new_start_area"), i("complete_area")])
+            }
+
+            return collect_each_type
+        }
+    },
+    "开发投资资金来源": {
+        type: "bar", desc_version: 2, group_by_keys: ["stat_month"],
+        collector: (rows, attr_index_map) => {
+            const row = rows[0]
+            function i(attr_name) {
+                return row[attr_index_map[attr_name]]
+            }
+            return [
+                ["国内贷款", i("domestic_loan")],
+                ["外国资本", i("foreign_capital")],
+                ["自行融资", i("self_financing")],
+                ["其他资本", i("other_capital")],
+                ["项目基金", i("project_funds")]
+            ]
+        },
+        x_count: 6
     },
 
     "分地区消费品零售总额（年度）": {
