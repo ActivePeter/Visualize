@@ -137,13 +137,37 @@ export default {
           ]
         }, {
           name: "资源环境",
-          dataparts: []
-        }, {
+          dataparts: [
+            new DataDescription("各地区废气排放及处理情况", "left", "630px"),
+            new DataDescription("各地区供水情况", "left", "430px"),
+
+            new DataDescription("全球水资源量年度信息", "right", "430px"),
+            new DataDescription("环境污染治理投资", "right", "630px"),
+
+            new DataDescription("自然灾害情况", "mid", "920px"),
+          ]
+        }, {//todo
           name: "人民生活",
-          dataparts: []
-        }, {
+          dataparts: [
+            new DataDescription("城乡恩格尔指数", "left", "630px"),
+            new DataDescription("各地区居民消费水平", "left", "430px"),
+
+            new DataDescription("储蓄存款情况", "right", "430px"),
+            new DataDescription("不同地区每户人口数", "right", "630px"),
+
+            new DataDescription("居民家庭住房情况", "mid", "920px"),
+          ]
+        }, {//todo
           name: "财政政策",
-          dataparts: []
+          dataparts: [
+            new DataDescription("分地区按行业分城镇单位就业人员情况", "left", "630px"),
+            new DataDescription("分地区城镇登记失业率", "left", "430px"),
+
+            new DataDescription("分行业城镇单位就业人员工资情况表", "right", "430px"),
+            new DataDescription("就业情况基本表", "right", "630px"),
+
+            new DataDescription("分地区按注册类型分城镇单位就业人员工资情况", "mid", "920px"),
+          ]
         }, {
           name: "保险",
           dataparts: [

@@ -60,6 +60,75 @@ const config_map = {
         }, map_point_scale: 5.5, map_point_offset: -95
     },
 
+    /// 资源环境
+    "各地区废气排放及处理情况": {
+
+        type: "map", lockey: "area_name",
+        // attr_in_group: "area_name",
+        // value: "SO2_discharged",
+        attr_map: {
+            // "area_name": "地区",
+            "SO2_discharged": "废气排放量",
+            // "area_name": "地区"
+        }, whitelist: {
+            "stat_year": (year) => year == "2012"
+            // "area_name": (name) => name == "福建省"
+        }, map_point_scale: 0.5, map_point_offset: -95
+    },
+    "各地区供水情况": {
+        type: "bar", desc_version: 2, group_by_keys: ["stat_year"],
+        collector: (rows, attr_index_map) => {
+            const row = rows[0]
+            function i(attr_name) {
+                return row[attr_index_map[attr_name]]
+            }
+            return [
+                ["地上水", i("surface_water")],
+                ["地下水", i("ground_water")],
+                ["其他", i("others")],
+                ["农业用水", i("agriculture")],
+                ["工业用水", i("industry")],
+                ["日常用水", i("daily_consumption")]
+            ]
+        }
+    },
+    "环境污染治理投资": {
+        type: "line", group_by: "stat_year", attr_map: {
+            "infrastructure": "基础设施",
+            "fuel_gas": "化石燃料污染",
+            "centralized_heating": "集中供热",
+            "drainage": "水污染",
+            "gardening": "农业污染",
+            "industrial_pollution": "工业污染",
+        }, whitelist: {}
+    },
+    "全球水资源量年度信息": {
+        type: "line", group_by: "stat_year", attr_map: {
+            "stat_year": "年份",
+            "surface": "地表水",
+            "ground": "地下水",
+        }, whitelist: {}
+    },
+    "自然灾害情况": {
+        type: "pie", desc_version: 2,
+        hide_tooltip: true,
+        collector: (rows, attr_index_map) => {
+            let collect_each_year = {}
+            rows.forEach(row => {
+                collect_each_year[row[1]] = row
+            })
+            let collect_each_type = [['灾害类型', '地震数', '森林火灾数', '森林虫灾影响面积']]
+            for (const year in collect_each_year) {
+                const row = collect_each_year[year]
+                function i(attr_name) {
+                    return row[attr_index_map[attr_name]]
+                }
+                collect_each_type.push([year, i("earthquake_num"), i("forest_fire_num"), i("forest_pest_affected_area"),])
+            }
+
+            return collect_each_type
+        }
+    },
 
     /// 就业与工资
     "分地区按行业分城镇单位就业人员情况": {
@@ -182,6 +251,60 @@ const config_map = {
             "age": "年龄",
             "population": "生育数"
         }, whitelist: {}
+    },
+
+    // 人民生活
+    "城乡恩格尔指数": {
+        type: "line", group_by: "stat_year", attr_map: {
+            "stat_year": "年份",
+            "urban_engel_coefficient": "城市恩格尔指数",
+            "rural_engel_coefficient": "乡村恩格尔指数"
+        }, whitelist: {}
+    },
+    "各地区居民消费水平": {
+        type: "map", lockey: "area_name", attr_map: {
+            // "stat_quarter": "季度",
+            "expense": "消费金额",
+        }, whitelist: {
+            "area_name": (name) => name != "中国",
+            "stat_year": (year) => year == "2015"
+        }, map_point_scale: 0.001,
+        map_point_offset: -60,
+    },
+    "居民家庭住房情况": {
+        type: "pie", desc_version: 2,
+        hide_tooltip: true,
+        collector: (rows, attr_index_map) => {
+            let collect_each_province = {}
+            rows.forEach(row => {
+                collect_each_province[row[3]] = row
+            })
+
+            let collect_each_type = [['房屋属性', '房屋面积', '房屋价格', '混凝土结构', '砖头结构']]
+            for (const province in collect_each_province) {
+                const row = collect_each_province[province]
+                function i(attr_name) {
+                    return row[attr_index_map[attr_name]]
+                }
+                collect_each_type.push([province, i("house_area"), i("house_value"), i("concrete_structure"), i("brick_wood_structure")])
+            }
+
+            return collect_each_type
+        }
+    },
+    "储蓄存款情况": {
+        type: "bar", desc_version: 2, group_by_keys: ["stat_year"],
+        collector: (rows, attr_index_map) => {
+            const row = rows[0]
+            function i(attr_name) {
+                return row[attr_index_map[attr_name]]
+            }
+            return [
+                ["定期存款", i("time_deposit")],
+                ["活期存款", i("demand_deposit")],
+            ]
+        },
+        x_count: 8
     },
 
     "分地区消费品零售总额（年度）": {
@@ -599,6 +722,7 @@ export class DataDescription {
         let source = config.collector(this.tabledata.slice(1), attr_index_map)
         source[0][0] = 'product'
         let option = {
+            title: [],
             backgroundColor: 'transparent',
             legend: {},
             dataset: {
@@ -611,7 +735,46 @@ export class DataDescription {
                 //     ['Walnut Brownie', 55.2, 67.1, 69.2, 72.4, 53.9, 39.1]
                 //   ]
             },
-            series: [
+            series: []
+        };
+        if (source[0].length == 4) {
+            option.series = [
+                {
+                    type: 'pie',
+                    radius: '30%',
+                    center: ['25%', '30%']
+                    // No encode specified, by default, it is '2012'.
+                },
+                {
+                    type: 'pie',
+                    radius: '30%',
+                    center: ['75%', '30%'],
+                    encode: {
+                        itemName: 'product',
+                        value: source[0][2]
+                    }
+                },
+                {
+                    type: 'pie',
+                    radius: '30%',
+                    center: ['50%', '75%'],
+                    encode: {
+                        itemName: 'product',
+                        value: source[0][3]
+                    }
+                },
+                // {
+                //     type: 'pie',
+                //     radius: '20%',
+                //     center: ['75%', '75%'],
+                //     encode: {
+                //         itemName: 'product',
+                //         value: source[0][4]
+                //     }
+                // }
+            ];
+        } else {
+            option.series = [
                 {
                     type: 'pie',
                     radius: '20%',
@@ -645,8 +808,23 @@ export class DataDescription {
                         value: source[0][4]
                     }
                 }
-            ]
-        };
+            ];
+        }
+        source[0].slice(1).forEach((s, i) => {
+            if (i < option.series.length) {
+                let top = option.series[i].center[1]
+                top = parseFloat(top.slice(0, top.length - 1))
+                option.title.push({
+                    text: s,
+                    // left: 'center'
+                    left: option.series[i].center[0],
+                    top: top + 19 + "%",
+                    textAlign: 'center'
+                })
+            }
+
+        })
+
         // if (!config.hide_tooltip) {
         //     option.tooltip = {}
         // }
@@ -690,17 +868,23 @@ export class DataDescription {
                 })
             })
         }
-        console.log("final bar option", option)
+        // console.log("final bar option", option)
+        let x_count = 3;
+        if ("x_count" in config) {
+            x_count = config.x_count
+        }
+        option.dataZoom[0].endValue = x_count - 1
         this.chart_option = option
 
         // anime
         if (this.interval_for_x_anime != -1) {
             clearInterval(this.interval_for_x_anime)
         }
+
         this.interval_for_x_anime = setInterval(() => {
             if (this.chart_option.dataZoom[0].endValue === this.chart_option.xAxis[0].data.length) {
                 this.chart_option.dataZoom[0].startValue = 0;
-                this.chart_option.dataZoom[0].endValue = 3;
+                this.chart_option.dataZoom[0].endValue = x_count - 1;
             } else {
                 this.chart_option.dataZoom[0].startValue += 1
                 this.chart_option.dataZoom[0].endValue += 1;
