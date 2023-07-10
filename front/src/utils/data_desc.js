@@ -11,12 +11,28 @@ const config_map = {
         }, whitelist: {}
     },
     "消费者景气指数": {
-        type: "line", group_by: "stat_month", attr_map: {
-            "stat_month": "月份",
-            "expectation_idx": "期望指数",
-            "satisfaction_idx": "满意指数",
-            "confidence_idx": "消费者信心指数"
-        }, whitelist: {}
+        // type: "bar", group_by: "stat_month", attr_map: {
+        //     "stat_month": "月份",
+        //     "expectation_idx": "期望指数",
+        //     "satisfaction_idx": "满意指数",
+        //     "confidence_idx": "消费者信心指数"
+        // }, whitelist: {}
+
+        type: "bar", desc_version: 2, group_by_keys: ["stat_month"],
+        collector: (rows, attr_index_map) => {
+            const row = rows[0]
+            function i(attr_name) {
+                return row[attr_index_map[attr_name]]
+            }
+            return [
+                ["期望指数", i("expectation_idx")],
+                ["满意指数", i("satisfaction_idx")],
+                ["消费者信心指数", i("confidence_idx")],
+                // ["城市就业", i("employ_urban")],
+                // ["乡镇就业", i("employ_rural")],
+                // ["未就业数", i("unemploy_num")]
+            ]
+        }
     },
     "全国居民消费价格指数": {
         type: "line", group_by: "stat_month", attr_map: {
@@ -41,9 +57,11 @@ const config_map = {
         }, whitelist: {
             "area_name": (name) => name != "中国",
             "item_name": (name) => name.indexOf("交通和通信") != -1
-        }, map_point_scale: 0.1
+        }, map_point_scale: 5.5, map_point_offset: -95
     },
 
+
+    /// 就业与工资
     "分地区按行业分城镇单位就业人员情况": {
         type: "bar", attr_in_group: "industry_name", group_by: "area_name", y: "employ", attr_map: {
             "industry_name": "行业",
@@ -54,6 +72,118 @@ const config_map = {
             "industry_name": (name) => name != "城镇单位总计"
         }
     },
+    "分地区按注册类型分城镇单位就业人员工资情况": {
+        type: "pie", group_by: "area_name",
+        // attr_in_group: "area_name",
+        value: "wage_avg",
+        attr_map: {
+            "area_name": "地区",
+            "wage_avg": "该行业平均工资",
+            // "area_name": "地区"
+        }, whitelist: {
+            "stat_year": (year) => year == "2006"
+            // "area_name": (name) => name == "福建省"
+        }
+    },
+    "分地区城镇登记失业率": {
+        type: "line", attr_in_group: "area_name", group_by: "stat_year", attr_map: {
+            "stat_year": "年份",
+            "area_name": "福建省",
+            "unemploy_rate": "失业率",
+        }, whitelist: {}
+    },
+    "分行业城镇单位就业人员工资情况表": {
+        type: "line", attr_in_group: "industry_name", group_by: "stat_year", attr_map: {
+            "stat_year": "年份",
+            "industry_name": "行业名称",
+            "wage_avg": "平均薪资"
+        }, whitelist: {}
+    },
+    "就业情况基本表": {
+        type: "bar", desc_version: 2, group_by_keys: ["stat_year"],
+        collector: (rows, attr_index_map) => {
+            const row = rows[0]
+            function i(attr_name) {
+                return row[attr_index_map[attr_name]]
+            }
+            return [
+                ["第一产业就业", i("employ_primary")],
+                ["第二产业就业", i("employ_secondary")],
+                ["第三产业就业", i("employ_tertiary")],
+                ["城市就业", i("employ_urban")],
+                ["乡镇就业", i("employ_rural")],
+                ["未就业数", i("unemploy_num")]
+            ]
+        }
+    },
+
+    // 人口
+    "不同年龄段人口数": {
+        type: "bar", desc_version: 2, group_by_keys: ["stat_year"],
+        collector: (rows, attr_index_map) => {
+            return rows.map((row) => {
+                return [row[2], row[5]]
+            })
+        }
+    },
+    "不同地区每户人口数": {
+        type: "bar", desc_version: 2, group_by_keys: ["area_name"],
+        collector: (rows, attr_index_map) => {
+            function i(row, attr_name) {
+                return row[attr_index_map[attr_name]]
+            }
+            return [
+                ["1人", i(rows[rows.length - 1], "one_persons")],
+                ["2人", i(rows[rows.length - 1], "two_persons")],
+                ["3人", i(rows[rows.length - 1], "three_persons")],
+                ["4人", i(rows[rows.length - 1], "four_persons")],
+                ["5人", i(rows[rows.length - 1], "five_persons")],
+                ["6人", i(rows[rows.length - 1], "six_persons")],
+                ["7人", i(rows[rows.length - 1], "seven_persons")],
+                ["8人", i(rows[rows.length - 1], "eight_persons")],
+                ["9人", i(rows[rows.length - 1], "nine_persons")],
+                [">=10人", i(rows[rows.length - 1], "over_ten_persons")],
+            ]
+        }
+    },
+    "不同地区受教育程度": {
+        type: "pie", desc_version: 2,
+        hide_tooltip: true,
+        collector: (rows, attr_index_map) => {
+            let collect_each_province = {}
+            rows.forEach(row => {
+                collect_each_province[row[3]] = row
+            })
+            let collect_each_learn = [['学习程度', '无教育经历', '小学', '初中', '高中', '大学']]
+            for (const province in collect_each_province) {
+                const row = collect_each_province[province]
+                function i(attr_name) {
+                    return row[attr_index_map[attr_name]]
+                }
+                collect_each_learn.push([province, i("no_schooling"), i("primary_school"), i("junior_secondary_school"), i("senior_secondary_school"), i("college")])
+            }
+
+            return collect_each_learn
+        }
+    },
+    "各地区人口平均预期寿命": {
+        type: "map", lockey: "area_name", attr_map: {
+            // "stat_quarter": "季度",
+            "life_expect": "预期寿命",
+        }, whitelist: {
+            "area_name": (name) => name != "中国",
+            "stat_year": (year) => year == "2010"
+        }, map_point_scale: 1.2,
+        map_point_offset: -60,
+    },
+    "妇女分龄生育情况": {
+        type: "line", attr_in_group: "age", group_by: "stat_year", attr_map: {
+            "stat_year": "年份",
+            "age": "年龄",
+            "population": "生育数"
+        }, whitelist: {}
+    },
+
     "分地区消费品零售总额（年度）": {
         type: "bar", attr_in_group: "stat_year", group_by: "area_name", y: "retail", attr_map: {
             "stat_year": "统计年份",
@@ -70,8 +200,8 @@ const config_map = {
         }, whitelist: {
         }
     },
-   
-     
+
+
     // "分地区按注册类型分城镇单位就业人员工资情况": {
     //     type: "bar", x: "stat_year", group_by: "area_name", y: "wage_avg", attr_map: {
     //         "wage_avg": "该行业平均工资",
@@ -92,19 +222,7 @@ const config_map = {
     //     }
     // },
 
-    "分地区按注册类型分城镇单位就业人员工资情况": {
-        type: "pie", group_by: "area_name",
-        // attr_in_group: "area_name",
-        value: "wage_avg",
-        attr_map: {
-            "area_name": "地区",
-            "wage_avg": "该行业平均工资",
-            // "area_name": "地区"
-        }, whitelist: {
-            "stat_year": (year) => year == "2006"
-            // "area_name": (name) => name == "福建省"
-        }
-    },
+
 
     // "分地区按注册类型分城镇单位就业人员工资情况": {
     //     type: "map", lockey: "area_name", attr_map: {
@@ -139,7 +257,7 @@ const config_map = {
         }
     },
 
-        "保险公司原保费收入和赔付支出情况": {
+    "保险公司原保费收入和赔付支出情况": {
         type: "line", group_by: "stat_year",
         attr_map: {
             "stat_year": "年份",
@@ -158,7 +276,7 @@ const config_map = {
         }, whitelist: {}
     },
     "限额以上零售分类表（月度）": {
-        type: "line", group_by: "stat_month", 
+        type: "line", group_by: "stat_month",
         attr_in_group: "item_name",
         attr_map: {
             "stat_month": "月份",
@@ -168,7 +286,7 @@ const config_map = {
             "item_sale_acc_rate": "当期值"
         }, whitelist: {
         }
-    }, 
+    },
     "保险公司资产情况": {
         type: "line", group_by: "stat_year",
         attr_map: {
@@ -182,11 +300,11 @@ const config_map = {
             // "stat_quarter": "季度",
             "market_num": "市场数量",
         }, whitelist: {
-            
+
         }, map_point_scale: 0.1
     },
 
-    
+
 
     "全国各地区保险业务统计表": {
         type: "line", group_by: "stat_year",
@@ -244,6 +362,74 @@ class WhiteListHelper {
         return ok
     }
 }
+
+class DivideLayer {
+    cur_group_by_i
+    group_bys
+    map = {}
+    get_attr_index
+
+    constructor(cur_group_by_i, group_bys, get_attr_index) {
+        this.group_bys = group_bys
+        this.cur_group_by_i = cur_group_by_i
+        this.get_attr_index = get_attr_index
+    }
+
+    depth() {
+        return this.group_bys.length
+    }
+    attr() {
+        return this.group_bys[this.cur_group_by_i]
+    }
+    _map_row(row) {
+        let attr_value = row[this.get_attr_index(this.group_bys[this.cur_group_by_i])]
+        if (attr_value in this.map) {
+            this.map[attr_value].push(row)
+        } else {
+            this.map[attr_value] = [row]
+        }
+    }
+    _map_next(row) {
+        let attr_value = row[this.get_attr_index(this.group_bys[this.cur_group_by_i])]
+        if (!(attr_value in this.map)) {
+            this.map[attr_value] = new DivideLayer(this.cur_group_by_i + 1, this.group_bys, this.get_attr_index)
+        }
+        this.map[attr_value].map_groupby(attr_value, row)
+    }
+    map_groupby(row) {
+        if (this.cur_group_by_i == this.group_bys.length - 1) {
+            this._map_row(row)
+        } else {
+            this._map_next(row)
+        }
+    }
+    // layer begins from 0
+    for_each_layer(layer, cb_key_divide_rows) {
+        if (layer > this.group_bys.length) {
+            console.error("for_each_layer out of layer range")
+        }
+        function arrive_divide(that) {
+            console.log("arrive_divide", that)
+            return layer < that.group_bys.length && layer == that.cur_group_by_i
+        }
+        function arrive_rows(that) {
+            console.log("arrive_rows", that)
+            return layer == that.group_bys.length && layer == that.cur_group_by_i + 1
+        }
+        if (arrive_divide(this)) {
+            cb_key_divide_rows(this.attr(), this, undefined)
+        } else if (arrive_rows(this)) {
+            for (const key in this.map) {
+                cb_key_divide_rows(key, undefined, this.map[key])
+            }
+        } else {
+            for (const key in this.map) {
+                this.map[key].for_each_layer(layer, cb_key_divide_rows)
+            }
+        }
+    }
+}
+
 export class DataDescription {
     type = "line" // 折线，饼
     tablename = ""
@@ -365,12 +551,161 @@ export class DataDescription {
                     arr_locname_value.push([row[loc_idx], row[attr_idx]])
                 }
             })
-            mapchartdata.add_one_dataset(attr_name, arr_locname_value, config.map_point_scale)
+            mapchartdata.add_one_dataset(attr_name, arr_locname_value, config.map_point_scale, config.map_point_offset)
         })
 
 
 
         this.chart_option = mapchartdata.option
+    }
+
+    load_data_v2(config) {
+        // {
+        //     type: "bar", 
+        //     desc_version: 2, 
+        //     group_by_keys: ["stat_year"],
+        //     collector: (rows, attr_index_map) => {}
+        // }
+        let attrline = this.tabledata[0]
+        let attr_index_map = {}
+        attrline.forEach((attr, i) => {
+            attr_index_map[attr] = i
+        })
+
+        function row_attr(row, attr) {
+            return row[attr_index_map[attr]]
+        }
+
+        let group_by = new DivideLayer(0, config.group_by_keys, (attr) => {
+            return attr_index_map[attr]
+        });
+
+
+
+        this.tabledata.slice(1).forEach((row, i) => {
+            group_by.map_groupby(row)
+        })
+
+        // to bar option
+        this.v2_2_bar_option(attr_index_map, config, group_by)
+    }
+    v2_pie_option(config) {
+        let attrline = this.tabledata[0]
+        let attr_index_map = {}
+        attrline.forEach((attr, i) => {
+            attr_index_map[attr] = i
+        })
+
+        let source = config.collector(this.tabledata.slice(1), attr_index_map)
+        source[0][0] = 'product'
+        let option = {
+            backgroundColor: 'transparent',
+            legend: {},
+            dataset: {
+                source: source
+                //   [
+                //     ['product', '2012', '2013', '2014', '2015', '2016', '2017'],
+                //     ['Milk Tea', 86.5, 92.1, 85.7, 83.1, 73.4, 55.1],
+                //     ['Matcha Latte', 41.1, 30.4, 65.1, 53.3, 83.8, 98.7],
+                //     ['Cheese Cocoa', 24.1, 67.2, 79.5, 86.4, 65.2, 82.5],
+                //     ['Walnut Brownie', 55.2, 67.1, 69.2, 72.4, 53.9, 39.1]
+                //   ]
+            },
+            series: [
+                {
+                    type: 'pie',
+                    radius: '20%',
+                    center: ['25%', '30%']
+                    // No encode specified, by default, it is '2012'.
+                },
+                {
+                    type: 'pie',
+                    radius: '20%',
+                    center: ['75%', '30%'],
+                    encode: {
+                        itemName: 'product',
+                        value: source[0][2]
+                    }
+                },
+                {
+                    type: 'pie',
+                    radius: '20%',
+                    center: ['25%', '75%'],
+                    encode: {
+                        itemName: 'product',
+                        value: source[0][3]
+                    }
+                },
+                {
+                    type: 'pie',
+                    radius: '20%',
+                    center: ['75%', '75%'],
+                    encode: {
+                        itemName: 'product',
+                        value: source[0][4]
+                    }
+                }
+            ]
+        };
+        // if (!config.hide_tooltip) {
+        //     option.tooltip = {}
+        // }
+        this.chart_option = option
+    }
+    v2_2_bar_option(attr_index_map, config, group_by) {
+        let option = bar_chart_default_option()
+
+
+        // level 1 group
+        if (group_by.depth() == 1) {
+
+            group_by.for_each_layer(0, (key, divide, rows) => {
+                console.log("for each 0", divide)
+
+                divide.for_each_layer(1, (key, divide, rows) => {
+                    if (divide) {
+                        console.warn("not support layer>1")
+                    } else {
+                        option.xAxis[0].data.push(key)
+                        let collect = config.collector(rows, attr_index_map)
+                        if (option.legend.data.length == 0) {
+                            collect.forEach((pair) => {
+                                option.legend.data.push(pair[0])
+                                option.series.push({
+                                    name: pair[0],
+                                    type: 'bar',
+                                    barGap: 0,
+                                    label: "label_" + pair[0],
+                                    emphasis: {
+                                        focus: 'series'
+                                    },
+                                    data: []
+                                },)
+                            })
+                        }
+                        collect.forEach((pair, i) => {
+                            option.series[i].data.push(pair[1])
+                        })
+                    }
+                })
+            })
+        }
+        console.log("final bar option", option)
+        this.chart_option = option
+
+        // anime
+        if (this.interval_for_x_anime != -1) {
+            clearInterval(this.interval_for_x_anime)
+        }
+        this.interval_for_x_anime = setInterval(() => {
+            if (this.chart_option.dataZoom[0].endValue === this.chart_option.xAxis[0].data.length) {
+                this.chart_option.dataZoom[0].startValue = 0;
+                this.chart_option.dataZoom[0].endValue = 3;
+            } else {
+                this.chart_option.dataZoom[0].startValue += 1
+                this.chart_option.dataZoom[0].endValue += 1;
+            }
+        }, 1000)
     }
 
     load_data_bar(config) {
@@ -381,6 +716,10 @@ export class DataDescription {
         let attr_in_group_i = -1
         let group_by_i = -1
         let y_i = -1
+
+        if ("desc_version" in config && config.desc_version == 2) {
+            return this.load_data_v2(config)
+        }
 
         attrline.forEach((attr, i) => {
             if (attr == config.attr_in_group) {
@@ -420,6 +759,9 @@ export class DataDescription {
     }
 
     load_data_pie(config) {
+        if (config.desc_version == 2) {
+            return this.v2_pie_option(config)
+        }
         let whitelist_helper = new WhiteListHelper(config)
         let attrline = this.tabledata[0]
 
@@ -746,7 +1088,7 @@ class MapChartData {
             locname = locname.slice(0, locname.length - 1)
         }
 
-        let spec = ["宁夏", "新疆", "广西", "西藏", "内蒙古","香港","澳门"]
+        let spec = ["宁夏", "新疆", "广西", "西藏", "内蒙古", "香港", "澳门"]
         spec.forEach((spec) => {
             if (locname.indexOf(spec) != -1) {
                 locname = spec
@@ -755,8 +1097,10 @@ class MapChartData {
 
         return MAP_INFO[locname]
     }
-    add_one_dataset(value_name, arr_locname_value, scale) {
-
+    add_one_dataset(value_name, arr_locname_value, scale, offset) {
+        if (!offset) {
+            offset = 0
+        }
         this.option.series.push({
             name: value_name,
             type: 'scatter',
@@ -769,7 +1113,8 @@ class MapChartData {
                 }
             }),
             symbolSize: function (val) {
-                return val[2] * scale;
+                console.log("symbolSize", val, (val[2] * scale) + offset)
+                return (val[2] + offset) * scale;
             },
             label: {
                 formatter: '{b}',

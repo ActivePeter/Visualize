@@ -91,67 +91,87 @@ export default {
     return {
       cur_page_idx: 0,
       screenWidth: document.body.clientWidth,
-      pages: [{
-        name: "景气指数",
-        dataparts: [
+      pages: [
+        {
+          name: "就业与工资",
+          dataparts: [
 
-          new DataDescription("消费者景气指数", "left", "630px"),
-          new DataDescription("全国居民消费价格指数", "left", "430px"),
-          new DataDescription("企业景气及企业家信心指数", "right", "430px"),
-          new DataDescription("宏观景气指数", "right", "630px"),
-          new DataDescription("分地区居民消费价格指数", "mid", "920px")
-        ]
-      }, {
-        name: "就业与工资",
-        dataparts: [
+            new DataDescription("分地区按行业分城镇单位就业人员情况", "left", "630px"),
+            new DataDescription("分地区城镇登记失业率", "left", "430px"),
 
-          new DataDescription("分地区按行业分城镇单位就业人员情况", "left", "630px"),
-          new DataDescription("分地区按注册类型分城镇单位就业人员工资情况", "mid", "920px"),
-          // new DataDescription("宏观景气指数", "left", "220px"),
-          // new DataDescription("宏观景气指数", "left", "220px"),
+            new DataDescription("分行业城镇单位就业人员工资情况表", "right", "430px"),
+            new DataDescription("就业情况基本表", "right", "630px"),
 
-          // new DataDescription("企业景气及企业家信心指数", "right", "220px"),
-          // new DataDescription("全国居民消费价格指数", "right", "330px"),
+            new DataDescription("分地区按注册类型分城镇单位就业人员工资情况", "mid", "920px"),
 
-          // new DataDescription("分地区居民消费价格指数", "mid", "420px"),
-        ]
-      }, {
-        name: "资源环境",
-        dataparts: []
-      }, {
-        name: "人民生活",
-        dataparts: []
-      }, {
-        name: "财政政策",
-        dataparts: []
-      }, {
-        name: "保险",
-        dataparts: [
-        new DataDescription("保险公司保费金额表", "left", "630px"),
-        new DataDescription("保险公司赔款及给付表", "left", "430px"),
-        new DataDescription("保险公司原保费收入和赔付支出情况", "right", "430px"),
-        new DataDescription("保险公司资产情况", "right", "630px"),
-        new DataDescription("全国各地区保险业务统计表", "mid", "920px"),
-        ]
-      }, {
-        name: "国内贸易",
-        dataparts: [
-        new DataDescription("分地区消费品零售总额（年度）", "left", "630px"),
-        new DataDescription("社会消费品销售总额（月度）", "left", "430px"),
-        new DataDescription("限额以上零售分类表（月度）", "right", "430px"),
-        new DataDescription("亿元以上商品交易市场基本情况（年度）", "right", "630px"),
-        new DataDescription("分地区亿元以上商品交易市场基本情况（年度）", "mid", "920px")
-        ]
-      },{
-        name: "房地产",
-        dataparts: []
-      }, {
-        name: "国民经济",
-        dataparts: []
-      }, {
-        name: "工业",
-        dataparts: []
-      },],
+
+            // new DataDescription("宏观景气指数", "left", "220px"),
+            // new DataDescription("宏观景气指数", "left", "220px"),
+
+            // new DataDescription("企业景气及企业家信心指数", "right", "220px"),
+            // new DataDescription("全国居民消费价格指数", "right", "330px"),
+
+            // new DataDescription("分地区居民消费价格指数", "mid", "420px"),
+          ]
+        },
+        {
+          name: "景气指数",
+          dataparts: [
+
+            new DataDescription("消费者景气指数", "left", "630px"),
+            new DataDescription("全国居民消费价格指数", "left", "430px"),
+            new DataDescription("企业景气及企业家信心指数", "right", "430px"),
+            new DataDescription("宏观景气指数", "right", "630px"),
+            new DataDescription("分地区居民消费价格指数", "mid", "920px")
+          ]
+        }, {
+          name: "人口",
+          dataparts: [
+            new DataDescription("不同年龄段人口数", "left", "630px"),
+            new DataDescription("各地区人口平均预期寿命", "left", "430px"),
+
+            new DataDescription("妇女分龄生育情况", "right", "430px"),
+            new DataDescription("不同地区每户人口数", "right", "630px"),
+
+            new DataDescription("不同地区受教育程度", "mid", "920px"),
+          ]
+        }, {
+          name: "资源环境",
+          dataparts: []
+        }, {
+          name: "人民生活",
+          dataparts: []
+        }, {
+          name: "财政政策",
+          dataparts: []
+        }, {
+          name: "保险",
+          dataparts: [
+            new DataDescription("保险公司保费金额表", "left", "630px"),
+            new DataDescription("保险公司赔款及给付表", "left", "430px"),
+            new DataDescription("保险公司原保费收入和赔付支出情况", "right", "430px"),
+            new DataDescription("保险公司资产情况", "right", "630px"),
+            new DataDescription("全国各地区保险业务统计表", "mid", "920px"),
+          ]
+        }, {
+          name: "国内贸易",
+          dataparts: [
+            new DataDescription("分地区消费品零售总额（年度）", "left", "630px"),
+            new DataDescription("社会消费品销售总额（月度）", "left", "430px"),
+            new DataDescription("限额以上零售分类表（月度）", "right", "430px"),
+            new DataDescription("亿元以上商品交易市场基本情况（年度）", "right", "630px"),
+            new DataDescription("分地区亿元以上商品交易市场基本情况（年度）", "mid", "920px")
+          ]
+        }, {
+          name: "房地产",
+          dataparts: []
+        }, {
+          name: "国民经济",
+          dataparts: []
+        }, {
+          name: "工业",
+          dataparts: []
+        },],
       cur_pagedata: {
         dataparts: []
       }
